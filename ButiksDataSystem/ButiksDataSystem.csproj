@@ -7,6 +7,13 @@
 
   <ItemGroup>
     <Folder Include="Context\" />
+    <Folder Include="ReceiptFiles\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="ProductFile\Products.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>
