@@ -1,4 +1,6 @@
 ﻿using ButiksDataSystem.Enteties;
+using ButiksDataSystem.Exeptions;
+using ButiksDataSystem.Extension_Methods;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -12,12 +14,12 @@ namespace ButiksDataSystem.DataLayer
     {
         private Receipt _receipt = new Receipt();
         //Save receipt in a text file
-        public void SaveReceipt(DateTime receiptId, List<OrderRow> orderRow, decimal total)
+        public void SaveReceipt(Receipt receipt)
         {
-            var receiptItem = FormatReceiptItem(receiptId, orderRow, total);//Get receipt items
-            var receiptFileName = receiptId.ToString("yyyy-MM-dd");
+            var receiptItem = FormatReceiptItem(receipt);
+            var receiptFileName = receipt.ReceiptId.ToString("yyyy-MM-dd");
             //File name for receipt
-            var path = receiptFileName + ".txt";
+            var path = $"{receiptFileName}.txt";
             if (!File.Exists(path)) //Check if file does not exist
             {
                 //Create a file and save receipt
@@ -25,66 +27,63 @@ namespace ButiksDataSystem.DataLayer
                 {
                     using (StreamWriter sw = File.CreateText(path))//Create file and save receipt
                     {
-                        sw.WriteLine("1>" + receiptItem);
+                        sw.WriteLine($"1>{receiptItem}");
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine(ex.ToString());
+                    throw new EntityException("Could not save receipt.", ex);
                 }
             }
             else //If file exist
             {
                 int lines = File.ReadAllLines(path).Length;
                 int lineIndex = lines == 0 ? 1 : lines + 1;
-                try
-                {
-                    using (StreamWriter sw = File.AppendText(path))  //Append new receipt in the same file
-                    {
-                        sw.WriteLine((lineIndex).ToString() + ">" + receiptItem);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex.ToString());
-                }
+                string item = $"{(lineIndex).ToString()}>{receiptItem}";
+                item.AppendToFile(path);
             }
         }
-        //Format receipt into a readable line saparating deatials in , and product items in |
-        private StringBuilder FormatReceiptItem(DateTime receiptId, List<OrderRow> orderRow, decimal total)
+        private StringBuilder FormatReceiptItem(Receipt receipt)
         {
-            StringBuilder recieptItem = new StringBuilder(receiptId.ToString("MM/dd/yyyy HH:mm:ss"));
-            for(var i = 0; i < orderRow.Count; i++)
+            StringBuilder recieptItem = new StringBuilder(receipt.ReceiptId.ToString("MM/dd/yyyy HH:mm:ss"));
+            var item = receipt.SelectedItems.ToList();
+            for (var i = 0; i < item.Count; i++)
             {
-                recieptItem.Append(i == 0 ? ">" + orderRow[i].OrderDetails : "|" + orderRow[i].OrderDetails);
+                var order = item[i];
+                var newOrderDetails = order.CampainPrice == 0 ? $"{order.ProductName} {order.Quantity}*0 {order.Price}={order.TotalPrice}" 
+                    : $"{order.ProductName} {order.Quantity}*{order.CampainPrice} {order.Price}={order.TotalPrice}";
+                recieptItem.Append(i == 0 ? $">{newOrderDetails}" : $"|{newOrderDetails}");
             }
-            recieptItem.Append(">" + total.ToString());
+            recieptItem.Append($">{receipt.ItemsTotal.ToString("#,0.00")}");
+            recieptItem.Append($">{receipt.Discount.ToString("#,0.00")}");
+            recieptItem.Append($">{receipt.Total.ToString("#,0.00")}");
             return recieptItem;
         }
-        public void SetFoundReceipt(string receiptItem)
+        public void GetReceipt(string receiptItem)
         {
-            
+
             //receipt.SelectedItems.Clear();
             var productItems = new List<OrderRow>();
             var items = receiptItem.Split(">");
-            //DateTime.ParseExact(items[1], "yyyy-MM-dd HH:mm:ss", null);
             DateTime receiptId = Convert.ToDateTime(items[1], CultureInfo.InvariantCulture);
-            var products = items[2].Split("|");           
+            var products = items[2].Split("|");
             foreach (var item in products)
             {
-                var newItem = item.Replace("*", "").Replace("=", "").Split(" ").Where(i => !string.IsNullOrEmpty(i)).ToList();
-                var productName = newItem[0];
-                var quantity = Convert.ToInt32(newItem[1]);
-                var price = Convert.ToDecimal(newItem[2]);
-                var totalPrice = Convert.ToDecimal(newItem[3]);
-                productItems.Add(new OrderRow { ProductName = productName, Price = price, Quantity = quantity, TotalPrice = totalPrice });
+                var oRow = new OrderRow();
+                var newItem = item.Replace("*", " ").Replace("=", " ").Split(" ").Where(i => !string.IsNullOrEmpty(i)).ToList();
+                oRow.ProductName = newItem[0];
+                oRow.Quantity = Convert.ToInt32(newItem[1]);
+                oRow.CampainPrice = Convert.ToDecimal(newItem[2]);
+                oRow.Price = Convert.ToDecimal(newItem[3]);
+                oRow.TotalPrice = Convert.ToDecimal(newItem[4]);
+                productItems.Add(oRow);
             }
             _receipt.SetReceipt(productItems, receiptId);
             _receipt.PrintReceipt();
         }
         public string FindSingleReceipt(string receiptIdDate, string receiptIdNumber)
         {
-            string path = receiptIdDate.Trim() + ".txt";
+            string path = $"{receiptIdDate.Trim()}.txt";
             if (File.Exists(path)) //Check if file does not exist
             {
                 var receiptItems = File.ReadAllLines(path).ToList();

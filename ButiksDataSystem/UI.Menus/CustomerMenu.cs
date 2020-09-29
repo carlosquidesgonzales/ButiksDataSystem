@@ -11,12 +11,10 @@ namespace ButiksDataSystem.Menus
     {
         private IData _data = new Data();
         private Receipt _receipt = new Receipt();
-        //private List<OrderRow> _orderRow = new List<OrderRow>();
         private ReceiptData _rData = new ReceiptData();
 
         public void ShowUserMenu()
         {
-            //Console.Clear();
             Console.WriteLine("CUSTOMER MENU");
             bool openMenu = true;
             while (openMenu)
@@ -54,9 +52,18 @@ namespace ButiksDataSystem.Menus
                     Console.Clear();
                     if (_receipt.SelectedItems.Count > 0)//Check if basket is not empty
                     {
-                        _receipt.PrintReceipt();
-                        _rData.SaveReceipt(_receipt.ReceiptId, _receipt.SelectedItems, _receipt.Total);
-                        _receipt.SelectedItems.Clear();
+                        try
+                        {
+                            _receipt.PrintReceipt();
+                            _rData.SaveReceipt(_receipt);
+                            _receipt.SelectedItems.Clear();
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.Clear();
+                            Console.WriteLine(ex.Message);
+                            NewCustomer();
+                        }
                     }
                     else
                     {
@@ -97,6 +104,8 @@ namespace ButiksDataSystem.Menus
             var findItem = _data.FindSingle(id);//Find the item if exixt in the list of products
             if (findItem != null) //Check if item exist
             {
+                var oRow = new OrderRow();
+                var newOrder = new List<OrderRow>();
                 int quantity;
                 int.TryParse(input[1].Trim(), out quantity);
                 if (quantity == 0) //Check if the quantity is a valid input
@@ -104,11 +113,12 @@ namespace ButiksDataSystem.Menus
                     Console.WriteLine("Enter a valid quantity");
                     return;
                 }
-                string pName = findItem.ProductName;
-                decimal price = findItem.Price;
-                decimal totalPrice = quantity * findItem.Price;
-                var newOrder = new List<OrderRow>();
-                newOrder.Add(new OrderRow { ProductName = pName, Price = price, Quantity = quantity, TotalPrice = totalPrice });
+                oRow.CampainPrice = findItem.IsCampainPrice() ? findItem.CampainPrice : 0;
+                oRow.ProductName = findItem.ProductName;
+                oRow.Price = findItem.Price;
+                oRow.TotalPrice = oRow.CampainPrice != 0 ? quantity * findItem.CampainPrice : findItem.Price * quantity;
+                oRow.Quantity = quantity;
+                newOrder.Add(oRow);
                 var receiptId = DateTime.Now;
                 _receipt.SetReceipt(newOrder, receiptId);
                 _receipt.PrintReceipt();

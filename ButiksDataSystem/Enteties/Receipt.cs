@@ -10,13 +10,13 @@ namespace ButiksDataSystem.Enteties
     {
         public DateTime ReceiptId { get; set; }
         public List<OrderRow> SelectedItems { get; } = new List<OrderRow>();
-
-        //public decimal Dicount { get; set; }
-        //public decimal ItemsTotal { get; set; }
+        public decimal Discount { get; set; }
+        public decimal ItemsTotal { get; set; }
         public decimal Total {get; set;}
         public string TotalAmount{ 
-            get{
-                return Total.ToString("C", System.Globalization.CultureInfo.GetCultureInfo("sv-SE"));
+            get
+            {
+                return Total.ToString("#,0.00");
             }
         }
         private decimal GetTotal()
@@ -32,13 +32,36 @@ namespace ButiksDataSystem.Enteties
         {
             SelectedItems.AddRange(orderRow);
             ReceiptId = receiptId;
-            Total = GetTotal();
+            SetDiscountAndtotal(GetTotal());
         }
-        //public Receipt GetReceipt()
-        //{
-        //    return new Receipt() {ReceiptId = ReceiptId, SelectedItems = SelectedItems, Total = Total };
-
-        //}
+        private void SetDiscountAndtotal(decimal total)
+        {
+            decimal discount = 0;
+            decimal newTotal = 0;
+            decimal itemsTotal = 0;
+            if (total > 1000 && total < 2000)
+            {
+                var d = 0.02m * total;
+                discount = 0.02m * total;
+                itemsTotal = total;
+                newTotal = total -d;
+            }else if (total > 2000)
+            {
+                var d = 0.03m * total;
+                discount = 0.03m * total;
+                itemsTotal = total;
+                newTotal = total -d;
+            }
+            else
+            {
+                discount = 0m;
+                itemsTotal = 0m;
+                newTotal = total;
+            }
+            ItemsTotal = itemsTotal;
+            Discount = discount;
+            Total = newTotal;
+        }
         public void PrintReceipt()
         {
             Console.Clear();
@@ -48,7 +71,17 @@ namespace ButiksDataSystem.Enteties
             {
                 Console.WriteLine(item.OrderDetails);
             }
-            Console.WriteLine($"TOTAL: {TotalAmount}");
+            if(ItemsTotal != 0)
+            {
+                Console.WriteLine($"ITEMS TOTAL: {ItemsTotal.ToString("#,0.00")} kr");
+                Console.WriteLine($"Discount: -{Discount.ToString("#,0.00")} kr");
+                Console.WriteLine($"TOTAL: {TotalAmount} kr");
+            }
+            else
+            {
+                Console.WriteLine($"TOTAL: {TotalAmount}");
+            }
+            
         }      
     }
 }

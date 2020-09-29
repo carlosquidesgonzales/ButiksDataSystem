@@ -10,6 +10,9 @@ namespace ButiksDataSystem.DataLayer
     {
         IQueryable<Product> GetProducts();
         Product FindSingle(string id);
-        void Update<T>(T entity) where T : class;
+        void Update(string newProduct, string oldPruduct);
+        public void Create(Product product);
+        void Delete(string id);
+        
     }
 }

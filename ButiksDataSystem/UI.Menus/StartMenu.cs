@@ -30,6 +30,7 @@ namespace ButiksDataSystem.Menus
                         openMenu = false;
                         break;
                     case 2:
+                        Console.Clear();
                         adminMenu.ShowAdminMenu();
                          openMenu = false;
                         break;                   
