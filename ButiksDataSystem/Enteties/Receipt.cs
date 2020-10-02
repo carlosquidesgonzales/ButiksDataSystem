@@ -9,11 +9,12 @@ namespace ButiksDataSystem.Enteties
     public class Receipt
     {
         public DateTime ReceiptId { get; set; }
-        public List<OrderRow> SelectedItems { get; } = new List<OrderRow>();
+        public List<ReceiptItem> SelectedItems { get; } = new List<ReceiptItem>();
         public decimal Discount { get; set; }
         public decimal ItemsTotal { get; set; }
-        public decimal Total {get; set;}
-        public string TotalAmount{ 
+        public decimal Total { get; set; }
+        public string TotalAmount
+        {
             get
             {
                 return Total.ToString("#,0.00");
@@ -22,40 +23,44 @@ namespace ButiksDataSystem.Enteties
         private decimal GetTotal()
         {
             decimal total = 0m;
-            foreach (OrderRow item in SelectedItems)
+            foreach (ReceiptItem item in SelectedItems)
             {
                 total += item.TotalPrice;
             }
             return total;
         }
-        public void SetReceipt(List<OrderRow> orderRow, DateTime receiptId)
+        public void SetReceipt(ReceiptItem receiptItem, DateTime receiptId)
         {
-            SelectedItems.AddRange(orderRow);
+            var item = SelectedItems.Find(s => s.ReceiptItemNr == receiptItem.ReceiptItemNr);
+            if(item != null)
+            {
+                item.Quantity += receiptItem.Quantity;
+                item.TotalPrice += receiptItem.TotalPrice;
+            }else
+                SelectedItems.Add(receiptItem);
+
             ReceiptId = receiptId;
             SetDiscountAndtotal(GetTotal());
         }
         private void SetDiscountAndtotal(decimal total)
         {
-            decimal discount = 0;
-            decimal newTotal = 0;
-            decimal itemsTotal = 0;
+            decimal discount = 0m;
+            decimal newTotal = 0m;
+            decimal itemsTotal = 0m;
             if (total > 1000 && total < 2000)
             {
-                var d = 0.02m * total;
                 discount = 0.02m * total;
                 itemsTotal = total;
-                newTotal = total -d;
-            }else if (total > 2000)
+                newTotal = total - discount;
+            }
+            else if (total > 2000)
             {
-                var d = 0.03m * total;
                 discount = 0.03m * total;
                 itemsTotal = total;
-                newTotal = total -d;
+                newTotal = total - discount;
             }
             else
             {
-                discount = 0m;
-                itemsTotal = 0m;
                 newTotal = total;
             }
             ItemsTotal = itemsTotal;
@@ -71,7 +76,7 @@ namespace ButiksDataSystem.Enteties
             {
                 Console.WriteLine(item.OrderDetails);
             }
-            if(ItemsTotal != 0)
+            if (ItemsTotal != 0)
             {
                 Console.WriteLine($"ITEMS TOTAL: {ItemsTotal.ToString("#,0.00")} kr");
                 Console.WriteLine($"Discount: -{Discount.ToString("#,0.00")} kr");
@@ -81,7 +86,7 @@ namespace ButiksDataSystem.Enteties
             {
                 Console.WriteLine($"TOTAL: {TotalAmount}");
             }
-            
-        }      
+
+        }
     }
 }

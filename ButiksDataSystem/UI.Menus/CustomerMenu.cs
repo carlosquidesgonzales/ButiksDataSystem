@@ -9,9 +9,15 @@ namespace ButiksDataSystem.Menus
 {
     public class CustomerMenu
     {
-        private IData _data = new Data();
+        private Data<Product> _data;
+        private List<Product> _products => _data.GetProducts().ToList();
         private Receipt _receipt = new Receipt();
         private ReceiptData _rData = new ReceiptData();
+
+        public CustomerMenu(Data<Product> data)
+        {
+            _data = data;
+        }
 
         public void ShowUserMenu()
         {
@@ -78,10 +84,9 @@ namespace ButiksDataSystem.Menus
                     string[] product = input.Split(" ");
                     if (input == "" || input.ToUpper() == "EXIT")//
                     {
-                        var start = new StartMenu();
                         Console.Clear();
                         Console.WriteLine("KASSA");
-                        Console.WriteLine("Operation cancled");
+                        Console.WriteLine("Operation canceled.");
                         ShowUserMenu();
                     }
                     if (product.Length > 1)
@@ -100,27 +105,36 @@ namespace ButiksDataSystem.Menus
         }
         private void CheckIfExist(string[] input)
         {
-            string id = input[0].Trim();
-            var findItem = _data.FindSingle(id);//Find the item if exixt in the list of products
-            if (findItem != null) //Check if item exist
+            
+            var receiptItem = new ReceiptItem();
+            int id = Convert.ToInt32(input[0].Trim());
+            var receiptId = DateTime.Now;
+            var product = _products.SingleOrDefault(p => p.ProductId == id);
+            if (product != null) //Check if item exist
             {
-                var oRow = new OrderRow();
-                var newOrder = new List<OrderRow>();
                 int quantity;
                 int.TryParse(input[1].Trim(), out quantity);
+                var singleReceipt = _receipt.SelectedItems.FirstOrDefault(r => r.ReceiptItemNr == id);
+                if(singleReceipt != null)
+                {
+                    if(singleReceipt.Quantity + quantity > product.MaxQuantity)
+                    {
+                        Console.WriteLine($"Only {product.MaxQuantity} pieces/kilos of {product.ProductName} allowed. Try again!");
+                        return;
+                    }                       
+                }
                 if (quantity == 0) //Check if the quantity is a valid input
                 {
                     Console.WriteLine("Enter a valid quantity");
                     return;
                 }
-                oRow.CampainPrice = findItem.IsCampainPrice() ? findItem.CampainPrice : 0;
-                oRow.ProductName = findItem.ProductName;
-                oRow.Price = findItem.Price;
-                oRow.TotalPrice = oRow.CampainPrice != 0 ? quantity * findItem.CampainPrice : findItem.Price * quantity;
-                oRow.Quantity = quantity;
-                newOrder.Add(oRow);
-                var receiptId = DateTime.Now;
-                _receipt.SetReceipt(newOrder, receiptId);
+                receiptItem.ReceiptItemNr = product.ProductId;
+                receiptItem.ProductName = product.ProductName;
+                receiptItem.Price = product.Price;
+                receiptItem.CampainPrice = product.IsCampainPrice() ? product.CampainPrice : 0;
+                receiptItem.TotalPrice = product.IsCampainPrice() ? quantity * product.CampainPrice : product.Price * quantity;
+                receiptItem.Quantity = quantity;
+                _receipt.SetReceipt(receiptItem, receiptId);
                 _receipt.PrintReceipt();
             }
             else

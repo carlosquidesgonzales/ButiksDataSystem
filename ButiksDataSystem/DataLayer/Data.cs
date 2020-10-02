@@ -11,29 +11,30 @@ using System.Text;
 
 namespace ButiksDataSystem.DataLayer
 {
-    public class Data : IData
+    public class Data<T> : IData<T> where T : Product , new()
     {
         private string _path = @"C:\Users\carlo\OneDrive\Skrivbord\C#-2020\C#-Labs\OOP\ButiksDataSystem\ButiksDataSystem\ProductFile\Products.txt";
-        public IQueryable<Product> GetProducts()
+        public IQueryable<T> GetProducts()
         {
             try
             {
-                var products = new List<Product>();
+                var products = new List<T>();
                 string s = "";
                 // Open the file to read from.
                 using (StreamReader sr = File.OpenText(_path))
                 {
                     while ((s = sr.ReadLine()) != null)
                     {
-                        var pro = new Product();
+                        var pro = new T();
                         string[] product = s.Split(">");
-                        pro.ProductId = product[0].Trim();
+                        pro.ProductId = Convert.ToInt32(product[0].Trim());
                         pro.ProductName = product[1];
                         pro.Price = Convert.ToDecimal(product[2]);
                         pro.PriceType = Enum.Parse<PriceType>(product[3].Trim());
-                        pro.CampainPrice = product[4] == "null" ? 0 : Convert.ToDecimal(product[4]);
-                        pro.CampainPriceStart = product[5] == "null" ? (DateTime?)null : Convert.ToDateTime(product[5]);
-                        pro.CampainPriceEnd = product[6] == "null" ? (DateTime?)null : Convert.ToDateTime(product[6]);
+                        pro.CampainPrice = product[4] == "0" ? decimal.Zero : Convert.ToDecimal(product[4]);
+                        pro.CampainPriceStart = product[5] == "" ? (DateTime?)null : Convert.ToDateTime(product[5]);
+                        pro.CampainPriceEnd = product[6] == "" ? (DateTime?)null : Convert.ToDateTime(product[6]);
+                        pro.MaxQuantity = Convert.ToInt32(product[7]);
                         products.Add(pro);
                     }
                 }
@@ -44,7 +45,7 @@ namespace ButiksDataSystem.DataLayer
                 return null;
             }
         }
-        public Product FindSingle(string id)
+        public T FindSingle(int id)
         {
             try
             {
@@ -77,7 +78,7 @@ namespace ButiksDataSystem.DataLayer
             try
             {
                 var products = GetProducts().ToList();
-                var index = products.FindIndex(p => p.ProductId.Equals(id));
+                int index = products.FindIndex(p => p.ProductId.Equals(id));
                 var tempProducts = File.ReadAllLines(_path).ToList();
                 tempProducts.RemoveAt(index);
                 File.WriteAllLines(_path, tempProducts.ToArray());
@@ -85,25 +86,31 @@ namespace ButiksDataSystem.DataLayer
             }
             catch (Exception ex)
             {
-
                 throw new EntityException("Could not delete item", ex);
             }
         }
-        public void Create(Product product)
+        public void Create(T product)
         {
             try
             {
-                var campainPrice = product.CampainPrice == 0 ? "null" : product.CampainPrice.ToString();
-                var campainPriceStart = product.CampainPriceStart == null ? "null" : product.CampainPriceStart.ToString();
-                var campainPriceEnd = product.CampainPriceEnd == null ? "null" : product.CampainPriceEnd.ToString();
-                var productTosave = $"\n{product.ProductId}>{product.ProductName}>{product.Price}>" +
-                    $"{((int)product.PriceType).ToString()}>{campainPrice}>{campainPriceStart}>{campainPriceEnd}";
+                string campainPrice = product.CampainPrice.ToString();
+                string campainPriceStart = product.CampainPriceStart.Value.ToString();
+                string campainPriceEnd = product.CampainPriceEnd.Value.ToString();
+                if(product.CampainPrice == 0)
+                {
+                    campainPrice = null;
+                    campainPriceStart = "null";
+                    campainPriceEnd = "null";
+
+                }
+                string productTosave = $"\n{product.ProductId}>{product.ProductName}>{product.Price}>" +
+                    $"{((int)product.PriceType).ToString()}>{campainPrice}>{campainPriceStart}>{campainPriceEnd}>{product.MaxQuantity}";
                 productTosave.AppendToFile(_path);
                 Console.WriteLine("Product is succesfully created!");
             }
             catch (Exception ex)
             {
-                throw new EntityException("Could find create item", ex);
+                throw new EntityException("Could not create item", ex);
             }
         }
     }

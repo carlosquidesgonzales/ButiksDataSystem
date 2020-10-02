@@ -1,4 +1,6 @@
-﻿using System;
+﻿using ButiksDataSystem.DataLayer;
+using ButiksDataSystem.Enteties;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -6,7 +8,7 @@ namespace ButiksDataSystem.Menus
 {
     public class StartMenu
     {
-        private CustomerMenu userMenu = new CustomerMenu();
+        private CustomerMenu userMenu = new CustomerMenu(new Data<Product>());
         private AdminMenu adminMenu = new AdminMenu();
         public void ShowStartMenu()
         {

@@ -5,9 +5,9 @@ using System.Text;
 
 namespace ButiksDataSystem.Enteties
 {
-    public class OrderRow//: Product
+    public class ReceiptItem//: Product
     {
-        
+        public int ReceiptItemNr { get; set; }
         public string ProductName { get; set; }
         public decimal Price { get; set; }
         public decimal? CampainPrice { get; set; }
