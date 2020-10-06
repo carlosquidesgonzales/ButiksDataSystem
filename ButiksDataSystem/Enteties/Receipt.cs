@@ -1,13 +1,11 @@
-﻿using ButiksDataSystem.DataLayer;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Text;
 
 namespace ButiksDataSystem.Enteties
 {
     public class Receipt
     {
+        #region Properties
         public DateTime ReceiptId { get; set; }
         public List<ReceiptItem> SelectedItems { get; } = new List<ReceiptItem>();
         public decimal Discount { get; set; }
@@ -17,9 +15,11 @@ namespace ButiksDataSystem.Enteties
         {
             get
             {
-                return Total.ToString("#,0.00");
+                return Total.ToString("#,0.00");               
             }
         }
+        #endregion
+        #region Methods
         private decimal GetTotal()
         {
             decimal total = 0m;
@@ -29,14 +29,21 @@ namespace ButiksDataSystem.Enteties
             }
             return total;
         }
+        public void UpdateReceipt(List<ReceiptItem> item)
+        {
+
+            item.RemoveAll(i => !SelectedItems.Contains(i));
+            SetDiscountAndtotal(GetTotal());
+        }
         public void SetReceipt(ReceiptItem receiptItem, DateTime receiptId)
         {
             var item = SelectedItems.Find(s => s.ReceiptItemNr == receiptItem.ReceiptItemNr);
-            if(item != null)
+            if (item != null)
             {
                 item.Quantity += receiptItem.Quantity;
                 item.TotalPrice += receiptItem.TotalPrice;
-            }else
+            }
+            else
                 SelectedItems.Add(receiptItem);
 
             ReceiptId = receiptId;
@@ -86,7 +93,14 @@ namespace ButiksDataSystem.Enteties
             {
                 Console.WriteLine($"TOTAL: {TotalAmount}");
             }
-
+        }
+        public void PrintReceiptLimited()
+        {
+            Console.Clear();
+            Console.WriteLine("KASSA");
+            Console.WriteLine($"KVITTO  {ReceiptId}");
+            Console.WriteLine($"TOTAL: {TotalAmount}");
         }
     }
+    #endregion
 }

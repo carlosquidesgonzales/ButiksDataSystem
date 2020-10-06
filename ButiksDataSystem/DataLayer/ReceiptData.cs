@@ -10,22 +10,21 @@ using System.Text;
 
 namespace ButiksDataSystem.DataLayer
 {
-    public class ReceiptData
+    public class ReceiptData<T>: IReceiptData<T> where T: Receipt
     {
         private Receipt _receipt = new Receipt();
-        //Save receipt in a text file
-        public void SaveReceipt(Receipt receipt)
+        #region Methods
+        public void SaveReceipt(T receipt)//Save receipt in a text file
         {
             var receiptItem = FormatReceiptItem(receipt);
             string receiptFileName = receipt.ReceiptId.ToString("yyyy-MM-dd");
             //File name for receipt
             string path = $"{receiptFileName}.txt";
             if (!File.Exists(path)) //Check if file does not exist
-            {
-                //Create a file for receipt
+            {             
                 try
                 {
-                    using (StreamWriter sw = File.CreateText(path))
+                    using (StreamWriter sw = File.CreateText(path)) //Create a file for receipt
                     {
                         sw.WriteLine($"1>{receiptItem}");
                     }
@@ -43,7 +42,7 @@ namespace ButiksDataSystem.DataLayer
                 item.AppendToFile(path);
             }
         }
-        private StringBuilder FormatReceiptItem(Receipt receipt)
+        private StringBuilder FormatReceiptItem(T receipt)
         {
             StringBuilder recieptItem = new StringBuilder(receipt.ReceiptId.ToString("MM/dd/yyyy HH:mm:ss"));
             var item = receipt.SelectedItems.ToList();
@@ -59,31 +58,31 @@ namespace ButiksDataSystem.DataLayer
             recieptItem.Append($">{receipt.Total.ToString("#,0.00")}");
             return recieptItem;
         }
-        public void GetReceipt(string receiptItem)
+        public void GetReceipt(string receiptItem, int choice)
         {
-            //receipt.SelectedItems.Clear();
             var productItems = new List<ReceiptItem>();
             string[] items = receiptItem.Split(">");
             DateTime receiptId = Convert.ToDateTime(items[1], CultureInfo.InvariantCulture);
             string[] products = items[2].Split("|");
             foreach (var item in products)
             {
-                var oRow = new ReceiptItem();
+                var newReceiptItem = new ReceiptItem();
                 var newItem = item.Replace("*", " ").Replace("=", " ").Split(" ").Where(i => !string.IsNullOrEmpty(i)).ToList();
-                oRow.ProductName = newItem[0];
-                oRow.Quantity = Convert.ToInt32(newItem[1]);
-                oRow.CampainPrice = Convert.ToDecimal(newItem[2]);
-                oRow.Price = Convert.ToDecimal(newItem[3]);
-                oRow.TotalPrice = Convert.ToDecimal(newItem[4]);
-                _receipt.SetReceipt(oRow, receiptId);
-                //productItems.Add(oRow);
+                newReceiptItem.ProductName = newItem[0];
+                newReceiptItem.Quantity = Convert.ToInt32(newItem[1]);
+                newReceiptItem.CampainPrice = Convert.ToDecimal(newItem[2]);
+                newReceiptItem.Price = Convert.ToDecimal(newItem[3]);
+                newReceiptItem.TotalPrice = Convert.ToDecimal(newItem[4]);
+                _receipt.SetReceipt(newReceiptItem, receiptId);
             }
-           
-            _receipt.PrintReceipt();
+            if (choice == 1)
+                _receipt.PrintReceiptLimited();
+            else
+                _receipt.PrintReceipt();
         }
         public string FindSingleReceipt(string receiptIdDate, string receiptIdNumber)
         {
-            string path = $"{receiptIdDate.Trim()}.txt";
+            string path = $"{receiptIdDate.Split(" ")[0].Trim()}.txt";
             if (File.Exists(path)) //Check if file does not exist
             {
                 var receiptItems = File.ReadAllLines(path).ToList();
@@ -95,5 +94,6 @@ namespace ButiksDataSystem.DataLayer
                 return null;//return null if not found  
             }
         }
+        #endregion
     }
 }

@@ -1,9 +1,4 @@
-﻿using ButiksDataSystem.Enums;
-using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace ButiksDataSystem.Enteties
+﻿namespace ButiksDataSystem.Enteties
 {
     public class ReceiptItem//: Product
     {

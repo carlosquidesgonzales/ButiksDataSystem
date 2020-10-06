@@ -1,14 +1,13 @@
-﻿using ButiksDataSystem.DataLayer;
-using ButiksDataSystem.Enums;
+﻿using ButiksDataSystem.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace ButiksDataSystem.Enteties
 {
     public class Product
     {
+        #region Properties
         public int ProductId { get; set; }
         public string ProductName { get; set; }
         public decimal Price { get; set; }
@@ -17,6 +16,8 @@ namespace ButiksDataSystem.Enteties
         public DateTime? CampainPriceStart { get; set; }
         public DateTime? CampainPriceEnd { get; set; }
         public int MaxQuantity { get; set; }
+        #endregion
+        #region Methods
         public bool IsCampainPrice()
         {
             bool isCampain = false;
@@ -41,9 +42,6 @@ namespace ButiksDataSystem.Enteties
             }
             return dates;
         }
-
-        //TO DO
-        //Implement max quantity
-
+        #endregion
     }
 }

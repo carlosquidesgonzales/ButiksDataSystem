@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace ButiksDataSystem.Enums
+﻿namespace ButiksDataSystem.Enums
 {
     public enum PriceType
     {
-        kilo = 1,
+        kilogram = 1,
         piece = 2
     }
 }

@@ -1,18 +1,16 @@
 ﻿using ButiksDataSystem.DataLayer;
-using ButiksDataSystem.Extension_Methods;
 using ButiksDataSystem.Enteties;
 using ButiksDataSystem.Enums;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 
 namespace ButiksDataSystem.Menus
 {
     public class AdminMenu
     {
-        private ReceiptData _rData = new ReceiptData();
-        private Data<Product> _bl = new Data<Product>();
+        private IReceiptData<Receipt> _rData = new ReceiptData<Receipt>();
+        private Data<Product> _data = new Data<Product>();
+        #region Menu
         public void ShowAdminMenu()
         {
             Console.WriteLine("ADMIN MENU");
@@ -54,6 +52,8 @@ namespace ButiksDataSystem.Menus
                 }
             }
         }
+        #endregion
+        #region Methods
         public decimal SafeNumberInput()
         {
             decimal number = 0;
@@ -104,7 +104,7 @@ namespace ButiksDataSystem.Menus
             {
                 Console.Write("Product id: ");
                 productId = SafeIntInput();
-                item = _bl.FindSingle(productId);
+                item = _data.FindSingleProduct(productId);
                 if (item == null)//Check id if exist
                     break;
                 else
@@ -113,7 +113,7 @@ namespace ButiksDataSystem.Menus
             var product = EnterProductInfo(productId, item);
             try
             {
-                _bl.Create(product);
+                _data.Create(product);
             }
             catch (Exception ex)
             {
@@ -140,11 +140,7 @@ namespace ButiksDataSystem.Menus
                     Console.WriteLine("Product name cannot be empty");
                 }
                 else
-                {
-                    productName = item.ProductName;
                     break;
-                }
-
             }
 
             Console.Write("Price: ");//Input product price
@@ -153,7 +149,7 @@ namespace ButiksDataSystem.Menus
             {
                 Console.WriteLine("Product Type 1 = kilo, 2 = piece:"); //Input price type
                 priceType = Enum.Parse<PriceType>(Console.ReadLine());
-                if (priceType.Equals(PriceType.kilo) || priceType.Equals(PriceType.piece))
+                if (priceType.Equals(PriceType.kilogram) || priceType.Equals(PriceType.piece))
                     break;
                 else
                     Console.WriteLine("Choose price type between 1 and 2");
@@ -196,12 +192,12 @@ namespace ButiksDataSystem.Menus
         }
         public void DeleteProduct()
         {
-            string id = "";
+            int id = 0;
             Console.Write("Product Id:");
-            id = Console.ReadLine();
+            id = SafeIntInput();
             try
             {
-                _bl.Delete(id);
+                _data.Delete(id);
             }
             catch (Exception ex)
             {
@@ -214,12 +210,12 @@ namespace ButiksDataSystem.Menus
             int productId = SafeIntInput();
             try
             {
-                var itemToUpdate = _bl.FindSingle(productId);
-                //Console.WriteLine($"{itemToUpdate.ProductName}, Price: {itemToUpdate.Price}, Price Type: {itemToUpdate.PriceType} Campain price: {itemToUpdate.CampainPrice} Start: {itemToUpdate.CampainPriceStart} End: {itemToUpdate.CampainPriceEnd} Maximun quantity: {itemToUpdate.MaxQuantity}");
-                var product = EnterProductInfo(productId, itemToUpdate);              
+                var itemToUpdate = _data.FindSingleProduct(productId);
+                var product = EnterProductInfo(productId, itemToUpdate);
                 Console.WriteLine("Are you sure you want to update? Y/N");
                 string processUpdate = Console.ReadLine().ToUpper();
-                if (processUpdate != "Y") return;
+                if (processUpdate != "Y")
+                    ShowAdminMenu();
                 string oldProduct = $"{productId}>{itemToUpdate.ProductName}>{itemToUpdate.Price}>" +
                     $"{(int)itemToUpdate.PriceType}>{itemToUpdate.CampainPrice}>" +
                     $"{itemToUpdate.CampainPriceStart.ToString().Split(" ")[0]}>" +
@@ -228,7 +224,7 @@ namespace ButiksDataSystem.Menus
                     $"{product.Price}>{(int)product.PriceType}>" +
                     $"{product.CampainPrice.ToString()}>{product.CampainPriceStart.ToString()}>" +
                     $"{product.CampainPriceEnd.ToString()}>{product.MaxQuantity}";
-                _bl.Update(newProduct, oldProduct);//Update product
+                _data.Update(newProduct, oldProduct);//Update product
             }
             catch (Exception ex)
             {
@@ -241,34 +237,40 @@ namespace ButiksDataSystem.Menus
             {
                 DateTime receiptDate;
                 int receiptNumber = 0;
-                while (true)
+                Console.WriteLine("Receipt Date year-month-day:");
+                receiptDate = SafeDateInput();
+                Console.WriteLine("Receipt Number:");
+                receiptNumber = SafeIntInput();
+                int choice = 0;
+                string receiptData = _rData.FindSingleReceipt(receiptDate.ToString(), receiptNumber.ToString());
+                if (receiptData != null)
                 {
-                    Console.WriteLine("Receipt Date year-month-day:");
-                    var date = DateTime.TryParse(Console.ReadLine(), out receiptDate);
-                    if (date)
-                        break;
-                    else
-                        Console.WriteLine("Error date input. Try again.");
+                    while (true)
+                    {
+                        Console.WriteLine("1: Receipt number and total");
+                        Console.WriteLine("2: All Details");
+                        Console.WriteLine("0: Back to Admin menu");
+                        choice = SafeIntInput();
+                        if (choice == 1 || choice == 2)
+                            break;
+                        else if (choice == 0)
+                        {
+                            Console.Clear();
+                            ShowAdminMenu();
+                        }
+                        else
+                            Console.WriteLine("Choose only between 0 and 2");
+                    }
+                    _rData.GetReceipt(receiptData, choice);
+                    break;
                 }
-                while (true)
+                else
                 {
-                    Console.WriteLine("Receipt Number:");
-                    var num = Int32.TryParse(Console.ReadLine(), out receiptNumber);
-                    if (num)
-                        break;
-                    else
-                        Console.WriteLine("Make sure it is a number.");
-                }
-                try
-                {
-                    string receiptData = _rData.FindSingleReceipt(receiptDate.ToString(), receiptNumber.ToString());
-                    _rData.GetReceipt(receiptData);
-                }
-                catch (Exception ex)
-                {
-                    ExceptionMethod(ex);
+                    Console.Clear();
+                    Console.WriteLine("Receipt not found! Try again");
                 }
             }
         }
+        #endregion
     }
 }

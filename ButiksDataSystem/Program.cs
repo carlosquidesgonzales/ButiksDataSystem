@@ -1,10 +1,4 @@
-﻿using ButiksDataSystem.DataLayer;
-using ButiksDataSystem.Enteties;
-using ButiksDataSystem.Enums;
-using ButiksDataSystem.Menus;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using ButiksDataSystem.Menus;
 
 namespace ButiksDataSystem
 {

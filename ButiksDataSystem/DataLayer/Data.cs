@@ -2,18 +2,17 @@
 using ButiksDataSystem.Enums;
 using ButiksDataSystem.Exeptions;
 using ButiksDataSystem.Extension_Methods;
-using ButiksDataSystem.Menus;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 
 namespace ButiksDataSystem.DataLayer
 {
-    public class Data<T> : IData<T> where T : Product , new()
+    public class Data<T> : IData<T> where T : Product, new()
     {
         private string _path = @"C:\Users\carlo\OneDrive\Skrivbord\C#-2020\C#-Labs\OOP\ButiksDataSystem\ButiksDataSystem\ProductFile\Products.txt";
+        #region Methods
         public IQueryable<T> GetProducts()
         {
             try
@@ -45,7 +44,7 @@ namespace ButiksDataSystem.DataLayer
                 return null;
             }
         }
-        public T FindSingle(int id)
+        public T FindSingleProduct(int id)
         {
             try
             {
@@ -73,16 +72,16 @@ namespace ButiksDataSystem.DataLayer
                 throw new EntityException("Could not update item.", ex);
             }
         }
-        public void Delete(string id)
+        public void Delete(int id)
         {
             try
             {
                 var products = GetProducts().ToList();
+                var productsFromFile = File.ReadAllLines(_path).ToList();
                 int index = products.FindIndex(p => p.ProductId.Equals(id));
-                var tempProducts = File.ReadAllLines(_path).ToList();
-                tempProducts.RemoveAt(index);
-                File.WriteAllLines(_path, tempProducts.ToArray());
-                Console.WriteLine("Product is succesfully removed!");
+                productsFromFile.RemoveAt(index);
+                File.WriteAllLines(_path, productsFromFile.ToArray());
+                Console.WriteLine("Product succesfully removed!");
             }
             catch (Exception ex)
             {
@@ -94,18 +93,18 @@ namespace ButiksDataSystem.DataLayer
             try
             {
                 string campainPrice = product.CampainPrice.ToString();
-                string campainPriceStart = product.CampainPriceStart.Value.ToString();
-                string campainPriceEnd = product.CampainPriceEnd.Value.ToString();
+                string campainPriceStart = product.CampainPriceStart.ToString().Split(" ")[0];
+                string campainPriceEnd = product.CampainPriceEnd.ToString().Split(" ")[0];
                 if(product.CampainPrice == 0)
                 {
-                    campainPrice = null;
-                    campainPriceStart = "null";
-                    campainPriceEnd = "null";
-
+                    campainPrice = product.CampainPrice.ToString();
+                    campainPriceStart = product.CampainPriceStart.ToString();
+                    campainPriceEnd = product.CampainPriceEnd.ToString();
                 }
                 string productTosave = $"\n{product.ProductId}>{product.ProductName}>{product.Price}>" +
                     $"{((int)product.PriceType).ToString()}>{campainPrice}>{campainPriceStart}>{campainPriceEnd}>{product.MaxQuantity}";
                 productTosave.AppendToFile(_path);
+                File.WriteAllLines(_path, File.ReadAllLines(_path).Where(l => !string.IsNullOrWhiteSpace(l)));
                 Console.WriteLine("Product is succesfully created!");
             }
             catch (Exception ex)
@@ -113,5 +112,6 @@ namespace ButiksDataSystem.DataLayer
                 throw new EntityException("Could not create item", ex);
             }
         }
+        #endregion
     }
 }
