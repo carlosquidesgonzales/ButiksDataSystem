@@ -31,12 +31,34 @@ namespace ButiksDataSystem.Menus
                         break;
                     case 2:
                         Console.Clear();
+                        //Loggin();
                         adminMenu.ShowAdminMenu();
-                         openMenu = false;
-                        break;                   
+                        openMenu = false;
+                        break;
                     default:
                         Console.WriteLine("Invalid menu. Choose between 0 and 2");
                         break;
+                }
+            }
+        }
+        private void Loggin()
+        {
+            while (true)
+            {
+                const string uName = "admin";
+                const string pword = "admin";
+                Console.WriteLine("User name:");
+                string userName = Console.ReadLine();
+                Console.WriteLine("Password:");
+                string password = Console.ReadLine();
+                if (uName == userName && pword == password)
+                {
+                    userMenu.ShowUserMenu();
+                    break;
+                }
+                else
+                {
+                    Console.WriteLine("Incorrect user name or password. Try again!");
                 }
             }
         }

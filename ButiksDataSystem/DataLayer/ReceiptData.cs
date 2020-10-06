@@ -10,7 +10,7 @@ using System.Text;
 
 namespace ButiksDataSystem.DataLayer
 {
-    public class ReceiptData<T>: IReceiptData<T> where T: Receipt
+    public class ReceiptData<T> : IReceiptData<T> where T : Receipt
     {
         private Receipt _receipt = new Receipt();
         #region Methods
@@ -21,7 +21,7 @@ namespace ButiksDataSystem.DataLayer
             //File name for receipt
             string path = $"{receiptFileName}.txt";
             if (!File.Exists(path)) //Check if file does not exist
-            {             
+            {
                 try
                 {
                     using (StreamWriter sw = File.CreateText(path)) //Create a file for receipt
@@ -49,7 +49,7 @@ namespace ButiksDataSystem.DataLayer
             for (var i = 0; i < item.Count; i++)
             {
                 var order = item[i];
-                string newOrderDetails = order.CampainPrice == 0 ? $"{order.ProductName} {order.Quantity}*0 {order.Price}={order.TotalPrice}" 
+                string newOrderDetails = order.CampainPrice == 0 ? $"{order.ProductName} {order.Quantity}*0 {order.Price}={order.TotalPrice}"
                     : $"{order.ProductName} {order.Quantity}*{order.CampainPrice} {order.Price}={order.TotalPrice}";
                 recieptItem.Append(i == 0 ? $">{newOrderDetails}" : $"|{newOrderDetails}");
             }
@@ -58,7 +58,7 @@ namespace ButiksDataSystem.DataLayer
             recieptItem.Append($">{receipt.Total.ToString("#,0.00")}");
             return recieptItem;
         }
-        public void GetReceipt(string receiptItem, int choice)
+        public void GetReceipt(string receiptItem, int choice, int receiptNumber)
         {
             var productItems = new List<ReceiptItem>();
             string[] items = receiptItem.Split(">");
@@ -66,13 +66,14 @@ namespace ButiksDataSystem.DataLayer
             string[] products = items[2].Split("|");
             foreach (var item in products)
             {
-                var newReceiptItem = new ReceiptItem();
+                ReceiptItem newReceiptItem;
                 var newItem = item.Replace("*", " ").Replace("=", " ").Split(" ").Where(i => !string.IsNullOrEmpty(i)).ToList();
-                newReceiptItem.ProductName = newItem[0];
-                newReceiptItem.Quantity = Convert.ToInt32(newItem[1]);
-                newReceiptItem.CampainPrice = Convert.ToDecimal(newItem[2]);
-                newReceiptItem.Price = Convert.ToDecimal(newItem[3]);
-                newReceiptItem.TotalPrice = Convert.ToDecimal(newItem[4]);
+                string productName = newItem[0];
+                int qty = Convert.ToInt32(newItem[1]);
+                decimal campainPrice = Convert.ToDecimal(newItem[2]);
+                decimal price = Convert.ToDecimal(newItem[3]);
+                decimal totalPrice = Convert.ToDecimal(newItem[4]);
+                newReceiptItem = new ReceiptItem(receiptNumber, productName, price, campainPrice, qty, totalPrice);
                 _receipt.SetReceipt(newReceiptItem, receiptId);
             }
             if (choice == 1)

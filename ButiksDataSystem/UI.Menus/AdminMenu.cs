@@ -9,7 +9,7 @@ namespace ButiksDataSystem.Menus
     public class AdminMenu
     {
         private IReceiptData<Receipt> _rData = new ReceiptData<Receipt>();
-        private Data<Product> _data = new Data<Product>();
+        private Data _data = new Data();
         #region Menu
         public void ShowAdminMenu()
         {
@@ -99,7 +99,7 @@ namespace ButiksDataSystem.Menus
         public void CreateProduct()
         {
             int productId = 0;
-            var item = new Product();
+            Product item;
             while (true)
             {
                 Console.Write("Product id: ");
@@ -123,7 +123,7 @@ namespace ButiksDataSystem.Menus
         }
         private Product EnterProductInfo(int productId, Product item)
         {
-
+            Product product;
             decimal _price;
             string productName = "";
             PriceType priceType;
@@ -178,17 +178,11 @@ namespace ButiksDataSystem.Menus
             }
             Console.WriteLine("Max quantity:");//Input for maximum quantity
             maxQuantity = SafeIntInput();
-            return new Product
-            {
-                ProductId = productId,
-                ProductName = productName,
-                Price = Convert.ToDecimal(_price),
-                PriceType = priceType,
-                CampainPrice = campainPrice == 0 ? 0 : campainPrice,
-                CampainPriceStart = campainPriceStart,
-                CampainPriceEnd = campainPriceEnd,
-                MaxQuantity = maxQuantity
-            };
+            product = new Product(productId, productName, Convert.ToDecimal(_price), priceType, maxQuantity);
+            product.CampainPrice = campainPrice == 0 ? 0 : campainPrice;
+            product.CampainPriceStart = campainPriceStart;
+            product.CampainPriceEnd = campainPriceEnd;
+            return product;
         }
         public void DeleteProduct()
         {
@@ -261,7 +255,7 @@ namespace ButiksDataSystem.Menus
                         else
                             Console.WriteLine("Choose only between 0 and 2");
                     }
-                    _rData.GetReceipt(receiptData, choice);
+                    _rData.GetReceipt(receiptData, choice, receiptNumber);
                     break;
                 }
                 else

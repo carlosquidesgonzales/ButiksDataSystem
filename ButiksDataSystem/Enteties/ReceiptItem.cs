@@ -1,6 +1,6 @@
 ﻿namespace ButiksDataSystem.Enteties
 {
-    public class ReceiptItem//: Product
+    public class ReceiptItem
     {
         public int ReceiptItemNr { get; set; }
         public string ProductName { get; set; }
@@ -16,5 +16,15 @@
                 return $"{ProductName} {Quantity} * {price} = {total}";
             } 
         }
+        public ReceiptItem(int receiptItemNr, string productName, decimal price, decimal? campainPrice, int quantity, decimal totalPrice)
+        {
+            ReceiptItemNr = receiptItemNr;
+            ProductName = productName;
+            Price = price;
+            CampainPrice = campainPrice;
+            Quantity = quantity;
+            TotalPrice = totalPrice;
+        }
+
     }
 }

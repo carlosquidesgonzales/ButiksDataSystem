@@ -31,7 +31,6 @@ namespace ButiksDataSystem.Enteties
         }
         public void UpdateReceipt(List<ReceiptItem> item)
         {
-
             item.RemoveAll(i => !SelectedItems.Contains(i));
             SetDiscountAndtotal(GetTotal());
         }

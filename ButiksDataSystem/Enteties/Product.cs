@@ -18,6 +18,14 @@ namespace ButiksDataSystem.Enteties
         public int MaxQuantity { get; set; }
         #endregion
         #region Methods
+        public Product(int productId, string productName, decimal price, PriceType priceType, int maxQuantity)
+        {
+            ProductId = productId;
+            ProductName = productName;
+            Price = price;
+            PriceType = priceType;
+            MaxQuantity = maxQuantity;
+        }
         public bool IsCampainPrice()
         {
             bool isCampain = false;

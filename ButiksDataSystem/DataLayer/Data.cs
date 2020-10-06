@@ -9,31 +9,32 @@ using System.Linq;
 
 namespace ButiksDataSystem.DataLayer
 {
-    public class Data<T> : IData<T> where T : Product, new()
+    public class Data : IData
     {
         private string _path = @"C:\Users\carlo\OneDrive\Skrivbord\C#-2020\C#-Labs\OOP\ButiksDataSystem\ButiksDataSystem\ProductFile\Products.txt";
         #region Methods
-        public IQueryable<T> GetProducts()
+        public IQueryable<Product> GetProducts()
         {
             try
             {
-                var products = new List<T>();
+                var products = new List<Product>();
                 string s = "";
                 // Open the file to read from.
                 using (StreamReader sr = File.OpenText(_path))
                 {
                     while ((s = sr.ReadLine()) != null)
                     {
-                        var pro = new T();
+                        Product pro;
                         string[] product = s.Split(">");
-                        pro.ProductId = Convert.ToInt32(product[0].Trim());
-                        pro.ProductName = product[1];
-                        pro.Price = Convert.ToDecimal(product[2]);
-                        pro.PriceType = Enum.Parse<PriceType>(product[3].Trim());
+                        int productId = Convert.ToInt32(product[0].Trim());
+                        string productName = product[1];
+                        decimal price = Convert.ToDecimal(product[2]);
+                        PriceType priceType = Enum.Parse<PriceType>(product[3].Trim());
+                        int maxQuantity = Convert.ToInt32(product[7]);                      
+                        pro = new Product(productId, productName, price, priceType, maxQuantity);
                         pro.CampainPrice = product[4] == "0" ? decimal.Zero : Convert.ToDecimal(product[4]);
                         pro.CampainPriceStart = product[5] == "" ? (DateTime?)null : Convert.ToDateTime(product[5]);
                         pro.CampainPriceEnd = product[6] == "" ? (DateTime?)null : Convert.ToDateTime(product[6]);
-                        pro.MaxQuantity = Convert.ToInt32(product[7]);
                         products.Add(pro);
                     }
                 }
@@ -44,7 +45,7 @@ namespace ButiksDataSystem.DataLayer
                 return null;
             }
         }
-        public T FindSingleProduct(int id)
+        public Product FindSingleProduct(int id)
         {
             try
             {
@@ -88,7 +89,7 @@ namespace ButiksDataSystem.DataLayer
                 throw new EntityException("Could not delete item", ex);
             }
         }
-        public void Create(T product)
+        public void Create(Product product)
         {
             try
             {

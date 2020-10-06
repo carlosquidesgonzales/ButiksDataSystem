@@ -9,7 +9,7 @@ namespace ButiksDataSystem.Menus
     public class CustomerMenu
     {
         #region Properties
-        private readonly IData<Product> _data = new Data<Product>();
+        private readonly IData _data = new Data();
         private IReceiptData<Receipt> _rData = new ReceiptData<Receipt>();
         private Receipt _receipt = new Receipt();
         private DateTime _receiptId => DateTime.Now;
@@ -108,7 +108,7 @@ namespace ButiksDataSystem.Menus
         }
         private void CancelProduct()
         {
-            var receipt = new Receipt();
+            //var receipt = new Receipt();
             if (_selectedProducts.Count() != 0)
             {
                 var lastItem = _receiptItemList.LastOrDefault();
@@ -140,7 +140,7 @@ namespace ButiksDataSystem.Menus
 
             if ((product.Quantity - lastItem.Quantity) != 0)
             {
-                var receiptItem = new ReceiptItem();
+                //var receiptItem = new ReceiptItem();
                 int itemIndex = _selectedProducts.FindIndex(i => i.ReceiptItemNr == lastItem.ReceiptItemNr);
                 product.Quantity = product.Quantity - lastItem.Quantity;
                 product.TotalPrice = product.Quantity * product.Price;
@@ -159,7 +159,7 @@ namespace ButiksDataSystem.Menus
         private void CheckIfExist(string[] input)
         {
             //_receiptList.Clear();
-            var receiptItem = new ReceiptItem();
+            ReceiptItem receiptItem;
             int id = Convert.ToInt32(input[0].Trim());
 
             var product = _products.SingleOrDefault(p => p.ProductId == id);
@@ -168,24 +168,25 @@ namespace ButiksDataSystem.Menus
                 int quantity;
                 int.TryParse(input[1].Trim(), out quantity);
                 var singleReceipt = _receipt.SelectedItems.FirstOrDefault(r => r.ReceiptItemNr == id);
-                if ((singleReceipt != null && (singleReceipt.Quantity + quantity > product.MaxQuantity && product.MaxQuantity > 1))||
+                if ((singleReceipt != null && (singleReceipt.Quantity + quantity > product.MaxQuantity && product.MaxQuantity > 1)) ||
                     quantity > product.MaxQuantity && product.MaxQuantity > 1)//Check if exceeds the maximum quantity or kilograms
                 {
                     Console.WriteLine($"Only {product.MaxQuantity} pieces/kilograms of {product.ProductName} allowed. Try again!");
                     return;
                 }
-               
+
                 if (quantity == 0) //Check if the quantity is a valid input
                 {
                     Console.WriteLine("Enter a valid quantity");
                     return;
                 }
-                receiptItem.ReceiptItemNr = product.ProductId;
-                receiptItem.ProductName = product.ProductName;
-                receiptItem.Price = product.Price;
-                receiptItem.CampainPrice = product.IsCampainPrice() ? product.CampainPrice : 0;
-                receiptItem.TotalPrice = product.IsCampainPrice() ? quantity * product.CampainPrice : product.Price * quantity;
-                receiptItem.Quantity = quantity;
+                int rNumber = product.ProductId;
+                string productName = product.ProductName;
+                decimal price = product.Price;
+                decimal campainPrice = product.IsCampainPrice() ? product.CampainPrice : 0;
+                decimal totalPrice = product.IsCampainPrice() ? quantity * product.CampainPrice : product.Price * quantity;
+                int qty = quantity;
+                receiptItem = new ReceiptItem(rNumber, productName, price, campainPrice, quantity, totalPrice);
                 _receiptItemList.Add(receiptItem);
                 _receipt.SetReceipt(receiptItem, _receiptId);
                 _receipt.PrintReceipt();

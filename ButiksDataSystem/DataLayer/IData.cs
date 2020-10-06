@@ -3,12 +3,12 @@ using System.Linq;
 
 namespace ButiksDataSystem.DataLayer
 {
-    public interface IData<T> where T : Product
+    public interface IData
     {
-        IQueryable<T> GetProducts();
-        T FindSingleProduct(int id);
+        IQueryable<Product> GetProducts();
+        Product FindSingleProduct(int id);
         void Update(string newProduct, string oldPruduct);
-        public void Create(T product);
+        public void Create(Product product);
         void Delete(int id);      
     }
 }
