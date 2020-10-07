@@ -6,6 +6,7 @@ namespace ButiksDataSystem.Extension_Methods
 {
     public static class Extension
     {
+        //
         public static void AppendToFile(this string item, string path)
         {
             try
