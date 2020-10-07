@@ -11,7 +11,8 @@ namespace ButiksDataSystem.DataLayer
 {
     public class Data : IData
     {
-        private string _path = @"C:\Users\carlo\OneDrive\Skrivbord\C#-2020\C#-Labs\OOP\ButiksDataSystem\ButiksDataSystem\ProductFile\Products.txt";
+        //private string _path = @"C:\Users\carlo\OneDrive\Skrivbord\C#-2020\C#-Labs\OOP\ButiksDataSystem\ButiksDataSystem\ProductFile\Products.txt";
+        private string _path = @"..\..\..\ProductFile\Products.txt";
         #region Methods
         public IQueryable<Product> GetProducts()
         {
